@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dynproxy-service
+spec:
+  selector:
+    app: dynproxy
+  ports:
+  - protocol: TCP
+    port: 8899
+    targetPort: 8899
+  type: ClusterIP

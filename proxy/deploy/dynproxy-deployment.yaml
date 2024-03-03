@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dynproxy-deployment
+  labels:
+    app: dynproxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dynproxy
+  template:
+    metadata:
+      labels:
+        app: dynproxy
+    spec:
+      containers:
+        - name: proxy-server
+          image: whaleeye/dynproxy:latest
+          ports:
+            - containerPort: 8899
