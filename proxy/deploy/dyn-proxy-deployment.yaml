@@ -8,14 +8,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dynproxy
+      app: dyn-proxy
   template:
     metadata:
       labels:
-        app: dynproxy
+        app: dyn-proxy
     spec:
       containers:
         - name: proxy-server
-          image: whaleeye/dynproxy:latest
+          image: whaleeye/dyn-proxy:latest
           ports:
             - containerPort: 8899
