@@ -2,4 +2,4 @@
 
 .vscode/
 
-proxy/log.txt
+**/log.txt
