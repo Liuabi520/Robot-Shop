@@ -25,7 +25,7 @@ def send_via_proxy(proxy_host, proxy_port, target_address, request):
 
 
 # Example usage
-proxy_host = "localhost"
+proxy_host = "dyn-proxy-service"
 proxy_port = 8899
 target_address = "httpforever.com:80"
 http_request = "GET / HTTP/1.1\r\nHost: httpforever.com\r\n\r\n"
