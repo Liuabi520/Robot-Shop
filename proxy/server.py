@@ -1,6 +1,7 @@
 import socket
 import threading
 import datetime
+import select
 
 
 def log(msg):
@@ -27,29 +28,41 @@ def handle_client(client_socket):
     target_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     target_socket.connect((target_host, target_port))
 
-    # the loop of proxying data
+    sockets_list = [client_socket, target_socket]
     while True:
-        # read from client and send to target
-        data = client_socket.recv(BUFFER_SIZE)
-        if not data:
-            log("Client disconnected")
-            break
-        log(f"Relaying request to target\n===\n{data}\n===")
-        target_socket.send(data)
+        # Calls select to block and wait for socket to be ready
+        read_sockets, _, exception_sockets = select.select(
+            sockets_list, [], sockets_list
+        )
 
-        # get the response from the target and send it back to the client
-        response = target_socket.recv(BUFFER_SIZE)
-        if not response:
-            log("Target disconnected")
-            break
-        log(f"Relaying response to client\n===\n{response}\n===")
-        client_socket.send(response)
+        for notified_socket in read_sockets:
+            if notified_socket == client_socket:
+                # read from client and send to target
+                data = client_socket.recv(BUFFER_SIZE)
+                if not data:
+                    log("Client disconnected")
+                    target_socket.close()
+                    return
+                log(f"Relaying request to target\n===\n{data}\n===")
+                target_socket.send(data)
+            elif notified_socket == target_socket:
+                # get the response from the target and send it back to the client
+                response = target_socket.recv(BUFFER_SIZE)
+                if not response:
+                    log("Target disconnected")
+                    client_socket.close()
+                    return
+                log(f"Relaying response to client\n===\n{response}\n===")
+                client_socket.send(response)
 
-    client_socket.close()
-    target_socket.close()
+        for notified_socket in exception_sockets:
+            # Close socket connections in case of error
+            sockets_list.remove(notified_socket)
+            notified_socket.close()
+            return
 
 
-def start_proxy(local_host, local_port):  
+def start_proxy(local_host, local_port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((local_host, local_port))
     server.listen(5)
